@@ -1,0 +1,11 @@
+
+queues:
+  /queue/foo:
+    durable: false
+
+messaging:
+  /queue/foo:
+    Processor:
+
+services:
+  Service:
