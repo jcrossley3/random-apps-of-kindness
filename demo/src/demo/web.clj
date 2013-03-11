@@ -1,8 +1,11 @@
 (ns demo.web
-  (:require [immutant.web            :as web]
-            [immutant.web.session    :as immutant-session]
-            [ring.middleware.session :as ring-session]
-            [ring.util.response      :as ring-util]))
+  (:use [clojure.pprint :only [pprint]])
+  (:require [immutant.web             :as web]
+            [immutant.web.session     :as immutant-session]
+            [immutant.util            :as util]
+            [ring.middleware.session  :as ring-session]
+            [ring.middleware.resource :as ring-resource]
+            [ring.util.response       :as ring-util]))
 
 (defn request-dumper
   "A very simple ring handler"
@@ -21,8 +24,8 @@
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "<h1>Hello World</h1>"})
-;;; Mount it at a "sub context path" [/demo/foo]
-(web/start "/foo" #'world-greeter)
+;;; Mount it at a "sub context path" [/demo/hello]
+(web/start "/hello" #'world-greeter)
 
 
 
@@ -37,3 +40,17 @@
   #'counter
   {:store (immutant-session/servlet-store)}))
 
+
+
+;;; Static resource middleware
+;;; Use immutant.web/wrap-resource unless >=1.2 ring
+(web/start (ring-resource/wrap-resource #'request-dumper "public"))
+
+
+
+;;; Handy utilities
+(util/in-immutant?)
+(util/app-relative "src")
+(util/http-port)
+(util/context-path)
+(util/app-uri)
