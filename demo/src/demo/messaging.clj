@@ -3,13 +3,12 @@
 
 ;;; create queue, if not already
 (def q "queue")
-(msg/stop q :force true)
 (msg/start q)
 
 ;;; publish some messages
 (msg/publish q :ping)
 (msg/publish q {:a 1, :b [1 2 3]})
-(msg/publish q 42, :priority :high)
+(msg/publish q 42, :priority :high, :ttl 1000)
 
 ;;; consume them
 (let [messages (msg/message-seq q)]
