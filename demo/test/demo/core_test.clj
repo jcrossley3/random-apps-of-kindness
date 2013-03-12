@@ -1,6 +1,5 @@
-(ns demo-test
-  (:use clojure.test
-        demo))
+(ns demo.core-test
+  (:use clojure.test))
 
 (deftest a-test
   (testing "FIXME, I fail."
