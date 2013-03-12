@@ -20,3 +20,18 @@
 (msg/listen q #(swap! results conj (:time %)), :selector "type='date'")
 (msg/publish q (with-meta {:time (java.util.Date.)} {:type "date"}))
 @results
+
+;;; create topic
+(def t "topic")
+(msg/start t)
+
+;;; durable topic subscriber
+(msg/receive t, :client-id "jim", :timeout 1)
+(msg/publish t "just call my name, i'll be there")
+(swap! results conj (msg/receive t, :client-id "jim"))
+@results
+
+;;; request/response
+(msg/respond q (partial apply +), :selector "op='sum'")
+(swap! results conj @(msg/request q (with-meta [1 2 3 4 5] {:op "sum"})))
+@results
