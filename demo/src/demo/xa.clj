@@ -1,5 +1,6 @@
 (ns demo.xa
   (:require [immutant.xa :as xa]
+            [immutant.xa.transaction :as tx]
             [immutant.messaging :as msg]
             [immutant.cache :as cache]
             [clojure.java.jdbc :as sql]))
@@ -30,20 +31,23 @@
     (sql/with-query-results rows ["select count(*) c from things"]
       (int ((first rows) :c)))))
 
-;;; Try an XA tx
+;;; Attempt multi-resource transaction
 (defn attempt-transaction [name & [f]]
   (try
     (xa/transaction
      (write-thing-to-db name)
      (msg/publish "/queue/xa" name)
      (cache/put cache :name name)
+     (tx/not-supported
+      (cache/put cache :attempts (inc (or (:attempts cache) 0))))
      (if f (f)))
     (catch Exception e
       (println "Caught exception:" (.getMessage e)))))
 
-(attempt-transaction "foo")
-(attempt-transaction "foo" #(throw (Exception. "rollback")))
 
-(msg/receive "/queue/xa" :timeout 1000)
-(count-things-in-db)
-cache
+(attempt-transaction "foo")
+(attempt-transaction "bar" #(throw (Exception. "rollback")))
+
+[(msg/receive "/queue/xa" :timeout 1000)
+ (count-things-in-db)
+ cache]
